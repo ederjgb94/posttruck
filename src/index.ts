@@ -1,32 +1,32 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+interface TruckData {
+	name: string;
+	latitude: number;
+	longitude: number;
+}
 
 export interface Env {
-	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	// MY_KV_NAMESPACE: KVNamespace;
-	//
-	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
-	// MY_DURABLE_OBJECT: DurableObjectNamespace;
-	//
-	// Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
-	// MY_BUCKET: R2Bucket;
-	//
-	// Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
-	// MY_SERVICE: Fetcher;
-	//
-	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
-	// MY_QUEUE: Queue;
+	mikv: KVNamespace;
 }
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		return new Response('Hello World!');
+
+		if (request.method === 'POST' || request.method === 'PUT') {
+			try {
+				const data: TruckData = await request.json(); // Analiza el cuerpo de la solicitud como JSON
+				const truckName = data.name;
+				const latitude = data.latitude;
+				const longitude = data.longitude;
+
+				// Almacena los datos en el espacio de nombres KV
+				await env.mikv.put(truckName, JSON.stringify({ latitude, longitude }));
+
+				return new Response("Data stored successfully");
+			} catch (error) {
+				return new Response("Error parsing JSON data", { status: 400 });
+			}
+		} else {
+			return new Response("Invalid request method", { status: 405 });
+		}
 	},
 };

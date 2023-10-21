@@ -49,3 +49,7 @@ compatibility_date = "2023-10-16"
 # [[migrations]]
 # tag = "v1"
 # new_classes = ["MyDurableObject"]
+
+kv_namespaces = [
+  { binding = "mikv", id = "6fbc4f1be1e848159dd488f0c4220092" }
+]
